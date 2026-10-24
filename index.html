@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta property="og:title" content="Gizem, bu mesaj senin için ✨">
+<meta property="og:description" content="Dokun ve izle.">
+<title>Doğum günün kutlu olsun Gizem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky-top:#04061a; --sky-mid:#14103a; --sky-low:#3a1d5c;
+  --cream:#fff4e0; --gold:#ffcf6b;
+  color-scheme:dark;
+  box-sizing:border-box;
+}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%;margin:0}
+body{
+  background:linear-gradient(180deg,var(--sky-top) 0%,var(--sky-mid) 60%,var(--sky-low) 100%);
+  color:var(--cream);
+  overflow:hidden;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  font-family:'Abril Fatface',Georgia,'Times New Roman',serif;
+}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+#crawl{
+  position:fixed;left:0;right:0;top:0;
+  display:flex;flex-direction:column;align-items:center;
+  gap:min(9vh,70px);
+  will-change:transform;
+  pointer-events:none;
+}
+.w{
+  margin:0;
+  font-weight:400;
+  font-size:min(25vw,21vh,230px);
+  line-height:1;
+  letter-spacing:.01em;
+  text-align:center;
+  text-shadow:0 0 30px rgba(255,244,224,.28);
+}
+.w.name{
+  color:var(--gold);
+  font-size:min(29vw,24vh,270px);
+  text-shadow:0 0 36px rgba(255,207,107,.55),0 0 90px rgba(255,160,60,.35);
+}
+body.done .name{animation:glow 2.6s ease-in-out infinite alternate}
+@keyframes glow{
+  from{text-shadow:0 0 30px rgba(255,207,107,.45),0 0 70px rgba(255,160,60,.25)}
+  to{text-shadow:0 0 46px rgba(255,207,107,.8),0 0 120px rgba(255,160,60,.5)}
+}
+.hint{
+  position:fixed;left:0;right:0;bottom:calc(4vh + env(safe-area-inset-bottom,0px));
+  margin:0;text-align:center;
+  font-family:system-ui,sans-serif;font-size:1rem;color:rgba(255,244,224,.7);
+  opacity:0;transition:opacity 1s ease;pointer-events:none;
+}
+body.done .hint{opacity:1}
+@media (prefers-reduced-motion:reduce){
+  body.done .name{animation:none}
+}
+</style>
+</head>
+<body>
+<canvas id="sky" aria-hidden="true"></canvas>
+
+<main id="crawl" aria-label="Doğum günün kutlu olsun Gizem">
+  <p class="w">Doğum</p>
+  <p class="w">günün</p>
+  <p class="w">kutlu</p>
+  <p class="w">olsun</p>
+  <p class="w name">Gizem</p>
+</main>
+
+<p class="hint">Tekrar izlemek için dokun</p>
+
+<script>
+(function(){
+  /* ---------- Starry sky ---------- */
+  var cv = document.getElementById('sky'), cx = cv.getContext('2d');
+  var stars = [], shots = [], W = 0, H = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function resize(){
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    cx.setTransform(dpr,0,0,dpr,0,0);
+    var n = Math.round(W * H / 5500);
+    stars = [];
+    for (var i = 0; i < n; i++){
+      stars.push({
+        x: Math.random() * W, y: Math.random() * H,
+        r: Math.random() * 1.4 + .3,
+        ph: Math.random() * 6.28, sp: Math.random() * 1.6 + .4,
+        warm: Math.random() < .25
+      });
+    }
+  }
+  function frame(t){
+    cx.clearRect(0,0,W,H);
+    var s = t / 1000;
+    for (var i = 0; i < stars.length; i++){
+      var a = stars[i];
+      var o = still ? .8 : .45 + .55 * Math.abs(Math.sin(s * a.sp + a.ph));
+      cx.globalAlpha = o;
+      cx.fillStyle = a.warm ? '#ffe2a8' : '#dfe8ff';
+      cx.beginPath(); cx.arc(a.x, a.y, a.r, 0, 6.283); cx.fill();
+    }
+    if (!still){
+      if (Math.random() < .004 && shots.length < 2){
+        shots.push({x: Math.random() * W * .8 + W * .2, y: Math.random() * H * .4, l: 0});
+      }
+      for (var j = shots.length - 1; j >= 0; j--){
+        var p = shots[j]; p.l += 1;
+        p.x -= 9; p.y += 4.5;
+        var g = cx.createLinearGradient(p.x, p.y, p.x + 80, p.y - 40);
+        g.addColorStop(0,'rgba(255,255,255,.9)'); g.addColorStop(1,'rgba(255,255,255,0)');
+        cx.globalAlpha = 1; cx.strokeStyle = g; cx.lineWidth = 2;
+        cx.beginPath(); cx.moveTo(p.x, p.y); cx.lineTo(p.x + 80, p.y - 40); cx.stroke();
+        if (p.l > 70 || p.x < -100 || p.y > H + 50) shots.splice(j,1);
+      }
+    }
+    cx.globalAlpha = 1;
+    requestAnimationFrame(frame);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+  requestAnimationFrame(frame);
+
+  /* ---------- Credits crawl ---------- */
+  var crawl = document.getElementById('crawl');
+  var raf = 0, running = false;
+
+  function endY(){
+    var vh = window.innerHeight;
+    var name = crawl.querySelector('.name');
+    var centre = name.offsetTop + name.offsetHeight / 2;
+    return vh / 2 - centre;
+  }
+  function ease(t){
+    var a = .8, d = a + (1 - a) / 2;
+    if (t < a) return t / d;
+    var u = t - a;
+    return (a + u - u * u / (2 * (1 - a))) / d;
+  }
+  function play(){
+    cancelAnimationFrame(raf);
+    document.body.classList.remove('done');
+    var vh = window.innerHeight;
+    var from = vh + 20, to = endY();
+    if (still){
+      crawl.style.transform = 'translateY(' + to + 'px)';
+      document.body.classList.add('done');
+      return;
+    }
+    var speed = Math.max(90, vh * .16);            /* px per second */
+    var dur = Math.abs(from - to) / speed * 1.12 * 1000;
+    var t0 = null;
+    running = true;
+    crawl.style.transform = 'translateY(' + from + 'px)';
+    function step(ts){
+      if (t0 === null) t0 = ts;
+      var p = Math.min((ts - t0) / dur, 1);
+      crawl.style.transform = 'translateY(' + (from + (to - from) * ease(p)) + 'px)';
+      if (p < 1){ raf = requestAnimationFrame(step); }
+      else { running = false; document.body.classList.add('done'); }
+    }
+    raf = requestAnimationFrame(step);
+  }
+
+  var started = false;
+  function go(){ if (started) return; started = true; setTimeout(play, 600); }
+  if (document.fonts && document.fonts.ready){
+    document.fonts.ready.then(go);
+    setTimeout(go, 1500);
+  } else { go(); }
+
+  document.body.addEventListener('click', function(){
+    if (!running && started) play();
+  });
+})();
+</script>
+</body>
+</html>
